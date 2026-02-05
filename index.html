@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
     <title>Checklist Renderer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -11,9 +12,10 @@
         <!-- Input Area -->
         <div class="mb-8">
             <label for="markdown-input" class="block text-xl font-bold mb-3 text-emerald-400">
-                Paste Your Markdown Checklist
+                ⬇️&nbsp Paste Markdown Checklist Here &nbsp⬇️ 
             </label>
-            <textarea 
+            <!-- Do not remove text area placeholder - JS backup-->
+            <textarea
                 id="markdown-input" 
                 placeholder="Paste markdown like:&#10;- [ ] Task one&#10;- [x] Task two (completed)&#10;- [ ] Task three"
                 class="w-full h-40 p-4 bg-slate-800 border-2 border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 font-mono text-sm"
