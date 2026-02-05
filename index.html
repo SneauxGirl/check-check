@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Renderer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Input Area -->
+        <div class="mb-8">
+            <label for="markdown-input" class="block text-xl font-bold mb-3 text-emerald-400">
+                Paste Your Markdown Checklist
+            </label>
+            <textarea 
+                id="markdown-input" 
+                placeholder="Paste markdown like:&#10;- [ ] Task one&#10;- [x] Task two (completed)&#10;- [ ] Task three"
+                class="w-full h-40 p-4 bg-slate-800 border-2 border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/50 font-mono text-sm"
+            ></textarea>
+            <button 
+                onclick="renderChecklist()" 
+                class="mt-3 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition shadow-lg hover:shadow-emerald-500/50"
+            >
+                Render Checklist
+            </button>
+        </div>
+
+        <!-- Output Area -->
+        <div id="checklist-output" class="space-y-6"></div>
+    </div>
+
+    <script>
+        function renderChecklist() {
+            const input = document.getElementById('markdown-input').value;
+            const output = document.getElementById('checklist-output');
+            
+            if (!input.trim()) {
+                output.innerHTML = '<p class="text-slate-500 italic">No content to display. Paste a checklist above.</p>';
+                return;
+            }
+
+            const lines = input.split('\n');
+            let html = '';
+            let currentSection = null;
+            let sectionItems = [];
+            let itemCounter = 0;
+
+            function renderSection() {
+                if (currentSection && sectionItems.length > 0) {
+                    html += `
+                        <div class="bg-slate-800 rounded-xl p-6 shadow-xl border border-slate-700">
+                            <h2 class="text-2xl font-bold mb-4 text-emerald-400">${currentSection}</h2>
+                            <ul class="space-y-2">
+                                ${sectionItems.join('')}
+                            </ul>
+                        </div>
+                    `;
+                    sectionItems = [];
+                }
+            }
+
+            lines.forEach(line => {
+                line = line.trim();
+
+                // Headers (## or ###)
+                if (line.startsWith('##')) {
+                    renderSection();
+                    currentSection = line.replace(/^#+\s*/, '').replace(/^✅\s*/, '');
+                }
+                // Checkboxes
+                else if (line.match(/^-\s*\[([ x])\]/)) {
+                    const isChecked = line.includes('[x]') || line.includes('[X]');
+                    const text = line.replace(/^-\s*\[([ xX])\]\s*/, '');
+                    const checkId = `check-${itemCounter++}`;
+                    
+                    sectionItems.push(`
+                        <li class="flex items-start p-3 hover:bg-slate-700/50 rounded-lg transition group">
+                            <input 
+                                type="checkbox" 
+                                id="${checkId}" 
+                                ${isChecked ? 'checked' : ''}
+                                class="mt-1 w-5 h-5 rounded border-2 border-slate-600 text-emerald-500 focus:ring-2 focus:ring-emerald-500 cursor-pointer flex-shrink-0"
+                            >
+                            <label 
+                                for="${checkId}" 
+                                class="ml-3 cursor-pointer select-none ${isChecked ? 'text-slate-500 line-through' : 'text-slate-200'} group-hover:text-emerald-300 transition"
+                            >
+                                ${text}
+                            </label>
+                        </li>
+                    `);
+                }
+                // Nested items with bullets or dashes
+                else if (line.match(/^\s{2,}-\s+\[([ x])\]/)) {
+                    const isChecked = line.includes('[x]') || line.includes('[X]');
+                    const text = line.replace(/^\s{2,}-\s*\[([ xX])\]\s*/, '');
+                    const checkId = `check-${itemCounter++}`;
+                    
+                    sectionItems.push(`
+                        <li class="flex items-start p-3 pl-8 hover:bg-slate-700/50 rounded-lg transition group">
+                            <input 
+                                type="checkbox" 
+                                id="${checkId}" 
+                                ${isChecked ? 'checked' : ''}
+                                class="mt-1 w-4 h-4 rounded border-2 border-slate-600 text-emerald-500 focus:ring-2 focus:ring-emerald-500 cursor-pointer flex-shrink-0"
+                            >
+                            <label 
+                                for="${checkId}" 
+                                class="ml-3 cursor-pointer select-none text-sm ${isChecked ? 'text-slate-500 line-through' : 'text-slate-300'} group-hover:text-emerald-300 transition"
+                            >
+                                ${text}
+                            </label>
+                        </li>
+                    `);
+                }
+            });
+
+            renderSection();
+            output.innerHTML = html || '<p class="text-slate-500 italic">No valid checklist items found.</p>';
+        }
+
+        // Auto-render on page load if there's a sample
+        window.addEventListener('load', () => {
+            const sample = `## ✅ Phase 1: Initial Setup
+
+- [ ] Run \`npx create vite@latest\`
+- [ ] Name project: \`hex-tool\`
+- [x] Create directory structure
+  - [x] \`mkdir -p src/components/shared\`
+  - [ ] \`mkdir -p src/utils\`
+
+## ✅ Phase 2: Core Files
+
+- [ ] Copy README.md to root
+- [ ] Merge package.json
+- [x] Copy SETUP-GUIDE.md to root`;
+            
+            document.getElementById('markdown-input').value = sample;
+            renderChecklist();
+        });
+    </script>
+</body>
+</html>
